@@ -11,6 +11,8 @@
   `Kennel::GPSCollar`, and keep a leading acronym whole (`GPS Collar`).
 - Write each scenario in a single call, so a parallel suite can no longer
   interleave two stories line by line.
+- Drop Minitest's progress dots while the story reporter is attached — they
+  interleaved with the stories and duplicated what the stories already say.
 
 ## [0.1.3] - 2026-08-11
 

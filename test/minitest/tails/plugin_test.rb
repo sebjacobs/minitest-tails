@@ -2,6 +2,7 @@
 
 require "test_helper"
 require "minitest/tails_plugin"
+require "stringio"
 
 class PluginTest < Minitest::Test
   def setup
@@ -51,6 +52,21 @@ class PluginTest < Minitest::Test
     Minitest.plugin_tails_init({})
 
     assert installed?
+  end
+
+  def test_drops_the_progress_reporter_so_the_dots_do_not_break_up_the_stories
+    ENV["TAILS"] = "1"
+    Minitest.reporter << Minitest::ProgressReporter.new(StringIO.new)
+    Minitest.plugin_tails_init({})
+
+    refute Minitest.reporter.reporters.any? { |r| r.is_a?(Minitest::ProgressReporter) }
+  end
+
+  def test_leaves_the_progress_reporter_alone_without_either_variable
+    Minitest.reporter << Minitest::ProgressReporter.new(StringIO.new)
+    Minitest.plugin_tails_init({})
+
+    assert Minitest.reporter.reporters.any? { |r| r.is_a?(Minitest::ProgressReporter) }
   end
 
   def test_does_not_install_the_reporter_without_either_variable
