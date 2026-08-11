@@ -2,44 +2,129 @@
 
 > Every test tells a tail.
 
-TODO: Delete this and the text below, and describe your gem
+A small Gherkin-style story DSL for [Minitest](https://github.com/minitest/minitest).
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/minitest/tails`. To experiment with that code, run `bin/console` for an interactive prompt.
+Write your tests as `given_`/`when_`/`then_` scenarios. Each step is recorded as it
+runs, so when an assertion fails the narrative is prepended to the failure
+message — you see the story up to and including the step that broke. An optional
+reporter prints passing scenarios as readable stories too.
+
+```
+Treat Dispenser: The dispenser will not serve more treats than it holds
+  ✓ Given a dispenser loaded with 50 treats
+  ✗ When Dennis begs it for 80
+
+Expected a HopperEmpty to be raised but nothing was raised.
+```
 
 ## Installation
 
-TODO: Replace `UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG` with your gem name right after releasing it to RubyGems.org. Please do not do it earlier due to security reasons. Alternatively, replace this section with instructions to install your gem from git if you don't plan to release to RubyGems.org.
+Add it to your Gemfile's test group:
 
-Install the gem and add to the application's Gemfile by executing:
-
-```bash
-bundle add UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
+```ruby
+gem "minitest-tails"
 ```
 
-If bundler is not being used to manage dependencies, install the gem by executing:
-
-```bash
-gem install UPDATE_WITH_YOUR_GEM_NAME_IMMEDIATELY_AFTER_RELEASE_TO_RUBYGEMS_ORG
-```
+Then `bundle install`.
 
 ## Usage
 
-TODO: Write usage instructions here
+`include Minitest::Tails` in a test class to get the `scenario` macro and the
+`given_`/`when_`/`then_`/`and_`/`but_` step methods:
+
+```ruby
+require "minitest/autorun"
+require "minitest/tails"
+
+class TreatDispenserFeatureTest < Minitest::Test
+  include Minitest::Tails
+
+  scenario "Dennis is served from a full hopper" do
+    given_ "a dispenser loaded with 100 treats" do
+      @dispenser = TreatDispenser.new(hopper: 100)
+    end
+
+    when_ "Dennis triggers it for 30 of them" do
+      @dispenser.dispense(30)
+    end
+
+    then_ "the hopper is down to 70" do
+      assert_equal 70, @dispenser.hopper
+    end
+  end
+end
+```
+
+The trailing underscore keeps every keyword uniform: `when`, `then` and `and`
+are Ruby keywords that can't be called bare, so all five methods carry the
+underscore rather than only the ones that need it.
+
+A step is just a labelled block. The block runs immediately; if it raises (an
+assertion failure or any other error), the step is marked failed and the
+collected narrative is prepended to the error message before it is re-raised.
+
+Prefer the keyword in the prose? `step "Given a dispenser loaded with 100 treats" do … end`
+does the same thing, taking the leading word as the keyword.
+
+### Reusable steps
+
+Wrap a step in a private helper to share it across scenarios — the keyword call
+still happens inside the helper, so it appears in the narrative:
+
+```ruby
+private
+
+def given_a_dispenser_loaded_with(treats)
+  given_ "a dispenser loaded with #{treats} treats" do
+    @dispenser = TreatDispenser.new(hopper: treats)
+  end
+end
+```
+
+### The story reporter
+
+Set the `STORY` environment variable to attach the narrative reporter, which
+prints each scenario's steps as it runs:
+
+```bash
+STORY=1 rake test
+```
+
+Without `STORY`, the reporter stays silent and runs are unchanged. The reporter
+is registered automatically as a Minitest plugin — no setup required.
+
+See [`example/treat_dispenser_feature_test.rb`](example/treat_dispenser_feature_test.rb)
+for a complete, runnable example starring Dennis the dachshund:
+
+```bash
+STORY=1 ruby -Ilib example/treat_dispenser_feature_test.rb
+```
+
+### Using it with Rails system tests
+
+The DSL is framework-agnostic — it only needs a Minitest test class. To use it
+for Rails feature/system tests, include it in your base class:
+
+```ruby
+class FeatureTestCase < ApplicationSystemTestCase
+  include Minitest::Tails
+end
+```
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+After checking out the repo, run `bin/setup` to install dependencies. Then run
+`rake` to run the tests and the linter. You can also run `bin/console` for an
+interactive prompt.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/sebjacobs/minitest-tails. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [code of conduct](https://github.com/sebjacobs/minitest-tails/blob/main/CODE_OF_CONDUCT.md).
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/sebjacobs/minitest-tails. This project is intended to be a
+safe, welcoming space for collaboration, and contributors are expected to adhere
+to the [code of conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Minitest::Tails project's codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/sebjacobs/minitest-tails/blob/main/CODE_OF_CONDUCT.md).
+The gem is available as open source under the terms of the
+[MIT License](https://opensource.org/licenses/MIT).
