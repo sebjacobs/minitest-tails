@@ -83,15 +83,17 @@ end
 
 ### The story reporter
 
-Set the `STORY` environment variable to attach the narrative reporter, which
-prints each scenario's steps as it runs:
+Set `STORY=1` (or `STORY=true`, case-insensitive) to attach the narrative
+reporter, which prints each scenario's steps as it runs:
 
 ```bash
 STORY=1 rake test
 ```
 
-Without `STORY`, the reporter stays silent and runs are unchanged. The reporter
-is registered automatically as a Minitest plugin — no setup required.
+Any other value — including empty or unset — leaves the reporter silent and runs
+unchanged, so passing the variable through a container's environment with an
+empty default won't switch it on by accident. The reporter is registered
+automatically as a Minitest plugin — no setup required.
 
 See [`example/treat_dispenser_feature_test.rb`](example/treat_dispenser_feature_test.rb)
 for a complete, runnable example starring Dennis the dachshund:

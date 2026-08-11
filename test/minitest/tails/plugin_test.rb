@@ -19,8 +19,15 @@ class PluginTest < Minitest::Test
     Minitest.reporter.reporters.any? { |r| r.is_a?(Minitest::Tails::Reporter) }
   end
 
-  def test_installs_the_story_reporter_when_STORY_is_set
+  def test_installs_the_story_reporter_when_STORY_is_1
     ENV["STORY"] = "1"
+    Minitest.plugin_tails_init({})
+
+    assert installed?
+  end
+
+  def test_installs_the_story_reporter_when_STORY_is_true_case_insensitively
+    ENV["STORY"] = "TRUE"
     Minitest.plugin_tails_init({})
 
     assert installed?
@@ -31,5 +38,14 @@ class PluginTest < Minitest::Test
     Minitest.plugin_tails_init({})
 
     refute installed?
+  end
+
+  def test_does_not_install_the_reporter_when_STORY_is_blank_or_falsey
+    ["", "0", "false", "no"].each do |value|
+      ENV["STORY"] = value
+      Minitest.plugin_tails_init({})
+
+      refute installed?, "expected STORY=#{value.inspect} to leave the reporter uninstalled"
+    end
   end
 end
