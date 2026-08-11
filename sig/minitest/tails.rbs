@@ -1,6 +1,35 @@
 module Minitest
   module Tails
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+    class Step
+      attr_accessor keyword: String
+      attr_accessor description: String
+      attr_accessor status: Symbol
+
+      def initialize: (keyword: String, description: String, status: Symbol) -> void
+    end
+
+    def self.included: (Module base) -> void
+
+    module ClassMethods
+      def scenario: (String name) { () -> void } -> Symbol
+    end
+
+    def story_steps: () -> Array[Step]
+
+    def step: (String text) ?{ () -> void } -> nil
+
+    def given_: (String description) ?{ () -> void } -> nil
+    def when_: (String description) ?{ () -> void } -> nil
+    def then_: (String description) ?{ () -> void } -> nil
+    def and_: (String description) ?{ () -> void } -> nil
+    def but_: (String description) ?{ () -> void } -> nil
+
+    private
+
+    def run_step: (String keyword, String description) ?{ () -> void } -> nil
+
+    def narrative: () -> String
   end
 end
