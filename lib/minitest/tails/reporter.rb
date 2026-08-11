@@ -5,6 +5,9 @@ require "minitest"
 module Minitest
   module Tails
     class Reporter < Minitest::AbstractReporter
+      CONTINUATION_KEYWORDS = %w[and but].freeze
+      private_constant :CONTINUATION_KEYWORDS
+
       def initialize(io = $stdout)
         super()
         @io = io
@@ -17,11 +20,16 @@ module Minitest
         @io.puts
         @io.puts "#{feature(result)}: #{scenario(result)}"
         steps.each do |step|
+          @io.puts if starts_a_phase?(step)
           @io.puts "  #{step.keyword} #{step.description}"
         end
       end
 
       private
+
+      def starts_a_phase?(step)
+        !CONTINUATION_KEYWORDS.include?(step.keyword.downcase)
+      end
 
       def feature(result)
         result.klass.sub(/(Feature)?Test\z/, "").gsub(/([a-z])([A-Z])/, '\1 \2')

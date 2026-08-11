@@ -2,6 +2,8 @@
 
 - Add `step_` as an alias of `step`, so a scenario can carry the trailing
   underscore on every step method rather than on all but one.
+- Separate each phase of a printed story with a blank line, keeping `And` and
+  `But` attached to the step they continue.
 
 ## [0.1.3] - 2026-08-11
 

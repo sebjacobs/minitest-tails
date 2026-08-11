@@ -38,6 +38,36 @@ class ReporterTest < Minitest::Test
     assert_includes output, "  Then an outcome"
   end
 
+  def test_separates_each_phase_with_a_blank_line
+    output = report(
+      klass: "WidgetTest",
+      name: "test_it_works",
+      steps: [step("Given", "a precondition"), step("When", "an action happens")]
+    )
+
+    assert_includes output, "  Given a precondition\n\n  When an action happens\n"
+  end
+
+  def test_keeps_a_continuation_attached_to_the_step_it_follows
+    output = report(
+      klass: "WidgetTest",
+      name: "test_it_works",
+      steps: [step("Then", "an outcome"), step("And", "another holds"), step("But", "not that one")]
+    )
+
+    assert_includes output, "  Then an outcome\n  And another holds\n  But not that one\n"
+  end
+
+  def test_treats_a_lowercase_continuation_keyword_as_a_continuation
+    output = report(
+      klass: "WidgetTest",
+      name: "test_it_works",
+      steps: [step("then", "an outcome"), step("and", "another holds")]
+    )
+
+    assert_includes output, "  then an outcome\n  and another holds\n"
+  end
+
   def test_prints_nothing_for_a_result_without_story_steps
     io = StringIO.new
     result = Result.new("WidgetTest", "test_it_works", {})

@@ -93,6 +93,9 @@ TAILS=1 rake test
 
 `STORY` is accepted as an equivalent, so either name switches the reporter on.
 
+Each phase is separated by a blank line; `And` and `But` stay attached to the
+step they continue.
+
 Any other value — including empty or unset — leaves the reporter silent and runs
 unchanged, so passing the variable through a container's environment with an
 empty default won't switch it on by accident. The reporter is registered
