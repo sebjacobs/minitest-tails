@@ -1,9 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "tails"
-
 module Minitest
   def self.plugin_tails_init(_options)
+    require_relative "tails" unless defined?(Tails::Reporter)
     return unless Tails.plugin_enabled?
     return if reporter.reporters.any? { |r| r.is_a?(Tails::Reporter) }
 
