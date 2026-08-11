@@ -17,12 +17,12 @@ module Minitest
         steps = Array(result.metadata[:story_steps])
         return if steps.empty?
 
-        @io.puts
-        @io.puts "#{feature(result)}: #{scenario(result)}"
+        lines = ["", "#{feature(result)}: #{scenario(result)}"]
         steps.each do |step|
-          @io.puts if starts_a_phase?(step)
-          @io.puts "  #{step}"
+          lines << "" if starts_a_phase?(step)
+          lines << "  #{step}"
         end
+        @io.print("#{lines.join("\n")}\n")
       end
 
       private

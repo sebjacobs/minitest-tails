@@ -9,6 +9,8 @@
   to the summary.
 - Name a feature after its class alone, so a namespaced test no longer renders as
   `Kennel::GPSCollar`, and keep a leading acronym whole (`GPS Collar`).
+- Write each scenario in a single call, so a parallel suite can no longer
+  interleave two stories line by line.
 
 ## [0.1.3] - 2026-08-11
 

@@ -6,6 +6,14 @@ require "stringio"
 class ReporterTest < Minitest::Test
   Result = Struct.new(:klass, :name, :metadata)
 
+  class RecordingIO
+    attr_reader :writes
+
+    def initialize = @writes = []
+
+    def print(text) = writes << text
+  end
+
   def report(klass:, name:, steps:)
     io = StringIO.new
     result = Result.new(klass, name, {story_steps: steps})
@@ -97,6 +105,14 @@ class ReporterTest < Minitest::Test
     output = report(klass: "Kennel::WalkiesTest", name: "test_x", steps: [step("Given", "y")])
 
     assert_includes output, "Walkies: x"
+  end
+
+  def test_writes_a_scenario_in_a_single_call_so_parallel_runs_cannot_interleave
+    io = RecordingIO.new
+    result = Result.new("WidgetTest", "test_it_works", {story_steps: [step("Given", "y")]})
+    Minitest::Tails::Reporter.new(io).record(result)
+
+    assert_equal ["\nWidget: it works\n\n  ✓ Given y\n"], io.writes
   end
 
   def test_keeps_an_acronym_whole_when_splitting_the_feature_name
