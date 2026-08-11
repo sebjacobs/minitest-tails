@@ -1,6 +1,9 @@
 module Minitest
   module Tails
     VERSION: String
+    PLUGIN_ENV_VARS: Array[String]
+
+    def self.plugin_enabled?: () -> bool
 
     class Step
       attr_accessor keyword: String

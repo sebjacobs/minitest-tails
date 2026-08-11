@@ -6,9 +6,15 @@ require_relative "tails_plugin"
 
 module Minitest
   module Tails
+    PLUGIN_ENV_VARS = %w[TAILS STORY].freeze
     TRUTHY_STRINGS = %w[1 true].freeze
+    private_constant :TRUTHY_STRINGS
 
     Step = Struct.new(:keyword, :description, :status)
+
+    def self.plugin_enabled?
+      PLUGIN_ENV_VARS.any? { |name| TRUTHY_STRINGS.include?(ENV[name]&.downcase) }
+    end
 
     def self.included(base)
       base.extend(ClassMethods)

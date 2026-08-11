@@ -83,12 +83,14 @@ end
 
 ### The story reporter
 
-Set `STORY=1` (or `STORY=true`, case-insensitive) to attach the narrative
+Set `TAILS=1` (or `TAILS=true`, case-insensitive) to attach the narrative
 reporter, which prints each scenario's steps as it runs:
 
 ```bash
-STORY=1 rake test
+TAILS=1 rake test
 ```
+
+`STORY` is accepted as an equivalent, so either name switches the reporter on.
 
 Any other value — including empty or unset — leaves the reporter silent and runs
 unchanged, so passing the variable through a container's environment with an
