@@ -6,6 +6,8 @@ require_relative "tails_plugin"
 
 module Minitest
   module Tails
+    TRUTHY_STRINGS = %w[1 true].freeze
+
     Step = Struct.new(:keyword, :description, :status)
 
     def self.included(base)

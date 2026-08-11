@@ -4,7 +4,7 @@ require_relative "tails"
 
 module Minitest
   def self.plugin_tails_init(_options)
-    return unless %w[1 true].include?(ENV["STORY"]&.downcase)
+    return unless Tails::TRUTHY_STRINGS.include?(ENV["STORY"]&.downcase)
     return if reporter.reporters.any? { |r| r.is_a?(Tails::Reporter) }
 
     reporter << Tails::Reporter.new
