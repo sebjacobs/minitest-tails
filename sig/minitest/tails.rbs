@@ -22,6 +22,7 @@ module Minitest
     def story_steps: () -> Array[Step]
 
     def step: (String text) ?{ () -> void } -> nil
+    alias step_ step
 
     def given_: (String description) ?{ () -> void } -> nil
     def when_: (String description) ?{ () -> void } -> nil

@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- Add `step_` as an alias of `step`, so a scenario can carry the trailing
+  underscore on every step method rather than on all but one.
+
 ## [0.1.3] - 2026-08-11
 
 - Load the gem root from the plugin when Minitest calls the init hook rather than

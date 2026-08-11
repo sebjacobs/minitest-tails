@@ -64,7 +64,8 @@ assertion failure or any other error), the step is marked failed and the
 collected narrative is prepended to the error message before it is re-raised.
 
 Prefer the keyword in the prose? `step "Given a dispenser loaded with 100 treats" do … end`
-does the same thing, taking the leading word as the keyword.
+does the same thing, taking the leading word as the keyword. `step_` is an alias,
+for anyone who wants the underscore on every step method.
 
 ### Reusable steps
 

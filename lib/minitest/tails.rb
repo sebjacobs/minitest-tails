@@ -37,6 +37,8 @@ module Minitest
       run_step(keyword, description, &block)
     end
 
+    alias_method :step_, :step
+
     def given_(description, &block) = run_step("Given", description, &block)
     def when_(description, &block) = run_step("When", description, &block)
     def then_(description, &block) = run_step("Then", description, &block)

@@ -25,6 +25,15 @@ class DslTest < Minitest::Test
     assert_equal "not that one", steps.last.description
   end
 
+  def test_step_underscore_is_an_alias_for_step
+    test = feature.new("anon")
+    test.step_("Given a precondition") {}
+
+    step = test.metadata[:story_steps].first
+    assert_equal "Given", step.keyword
+    assert_equal "a precondition", step.description
+  end
+
   def test_a_step_that_runs_cleanly_is_marked_passed
     test = feature.new("anon")
     test.given_("a precondition") {}
