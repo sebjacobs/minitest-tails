@@ -92,4 +92,16 @@ class ReporterTest < Minitest::Test
 
     assert_includes output, "Widget: x"
   end
+
+  def test_names_the_feature_after_the_class_alone_not_its_namespace
+    output = report(klass: "Kennel::WalkiesTest", name: "test_x", steps: [step("Given", "y")])
+
+    assert_includes output, "Walkies: x"
+  end
+
+  def test_keeps_an_acronym_whole_when_splitting_the_feature_name
+    output = report(klass: "GPSCollarTest", name: "test_x", steps: [step("Given", "y")])
+
+    assert_includes output, "GPS Collar: x"
+  end
 end

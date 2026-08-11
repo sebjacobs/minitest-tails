@@ -32,7 +32,10 @@ module Minitest
       end
 
       def feature(result)
-        result.klass.sub(/(Feature)?Test\z/, "").gsub(/([a-z])([A-Z])/, '\1 \2')
+        result.klass.split("::").last
+          .sub(/(Feature)?Test\z/, "")
+          .gsub(/([A-Z]+)([A-Z][a-z])/, '\1 \2')
+          .gsub(/([a-z\d])([A-Z])/, '\1 \2')
       end
 
       def scenario(result)

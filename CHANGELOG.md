@@ -7,6 +7,8 @@
 - Mark each step in the printed story with the ✓/✗ it already carried in the
   failure narrative, so a failed run shows which step broke without reading down
   to the summary.
+- Name a feature after its class alone, so a namespaced test no longer renders as
+  `Kennel::GPSCollar`, and keep a leading acronym whole (`GPS Collar`).
 
 ## [0.1.3] - 2026-08-11
 
