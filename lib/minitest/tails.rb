@@ -2,6 +2,7 @@
 
 require_relative "tails/version"
 require_relative "tails/reporter"
+require_relative "tails_plugin"
 
 module Minitest
   module Tails
