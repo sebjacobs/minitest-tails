@@ -11,6 +11,7 @@ module Minitest
       attr_accessor status: Symbol
 
       def initialize: (keyword: String, description: String, status: Symbol) -> void
+      def to_s: () -> String
     end
 
     def self.included: (Module base) -> void

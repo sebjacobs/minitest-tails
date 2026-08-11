@@ -4,6 +4,9 @@
   underscore on every step method rather than on all but one.
 - Separate each phase of a printed story with a blank line, keeping `And` and
   `But` attached to the step they continue.
+- Mark each step in the printed story with the ✓/✗ it already carried in the
+  failure narrative, so a failed run shows which step broke without reading down
+  to the summary.
 
 ## [0.1.3] - 2026-08-11
 

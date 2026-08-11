@@ -10,7 +10,12 @@ module Minitest
     TRUTHY_STRINGS = %w[1 true].freeze
     private_constant :TRUTHY_STRINGS
 
-    Step = Struct.new(:keyword, :description, :status)
+    STEP_MARKS = {passed: "✓", failed: "✗"}.freeze
+    private_constant :STEP_MARKS
+
+    Step = Struct.new(:keyword, :description, :status) do
+      def to_s = "#{STEP_MARKS.fetch(status, "•")} #{keyword} #{description}"
+    end
 
     def self.plugin_enabled?
       PLUGIN_ENV_VARS.any? { |name| TRUTHY_STRINGS.include?(ENV[name]&.downcase) }
@@ -59,14 +64,7 @@ module Minitest
     end
 
     def narrative
-      story_steps.map do |step|
-        mark = case step.status
-        when :passed then "✓"
-        when :failed then "✗"
-        else "•"
-        end
-        "  #{mark} #{step.keyword} #{step.description}"
-      end.join("\n")
+      story_steps.map { |step| "  #{step}" }.join("\n")
     end
   end
 end

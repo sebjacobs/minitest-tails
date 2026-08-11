@@ -93,8 +93,20 @@ TAILS=1 rake test
 
 `STORY` is accepted as an equivalent, so either name switches the reporter on.
 
+```
+Treat Dispenser: The dispenser will not serve more treats than it holds
+
+  ✓ Given a dispenser loaded with 50 treats
+
+  ✓ When Dennis begs it for 80
+
+  ✓ Then the request is refused
+  ✓ And the hopper still holds 50
+```
+
 Each phase is separated by a blank line; `And` and `But` stay attached to the
-step they continue.
+step they continue. Every step carries the same ✓/✗ mark it has in a failure
+narrative.
 
 Any other value — including empty or unset — leaves the reporter silent and runs
 unchanged, so passing the variable through a container's environment with an

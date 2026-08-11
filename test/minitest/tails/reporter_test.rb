@@ -13,8 +13,8 @@ class ReporterTest < Minitest::Test
     io.string
   end
 
-  def step(keyword, description)
-    Minitest::Tails::Step.new(keyword:, description:, status: :passed)
+  def step(keyword, description, status = :passed)
+    Minitest::Tails::Step.new(keyword:, description:, status:)
   end
 
   def test_prints_the_feature_and_scenario_heading
@@ -34,8 +34,19 @@ class ReporterTest < Minitest::Test
       steps: [step("Given", "a precondition"), step("Then", "an outcome")]
     )
 
-    assert_includes output, "  Given a precondition"
-    assert_includes output, "  Then an outcome"
+    assert_includes output, "  ✓ Given a precondition"
+    assert_includes output, "  ✓ Then an outcome"
+  end
+
+  def test_marks_a_failed_step_and_leaves_earlier_ones_passed
+    output = report(
+      klass: "WidgetTest",
+      name: "test_it_works",
+      steps: [step("Given", "a precondition"), step("When", "it breaks", :failed)]
+    )
+
+    assert_includes output, "  ✓ Given a precondition"
+    assert_includes output, "  ✗ When it breaks"
   end
 
   def test_separates_each_phase_with_a_blank_line
@@ -45,7 +56,7 @@ class ReporterTest < Minitest::Test
       steps: [step("Given", "a precondition"), step("When", "an action happens")]
     )
 
-    assert_includes output, "  Given a precondition\n\n  When an action happens\n"
+    assert_includes output, "  ✓ Given a precondition\n\n  ✓ When an action happens\n"
   end
 
   def test_keeps_a_continuation_attached_to_the_step_it_follows
@@ -55,7 +66,7 @@ class ReporterTest < Minitest::Test
       steps: [step("Then", "an outcome"), step("And", "another holds"), step("But", "not that one")]
     )
 
-    assert_includes output, "  Then an outcome\n  And another holds\n  But not that one\n"
+    assert_includes output, "  ✓ Then an outcome\n  ✓ And another holds\n  ✓ But not that one\n"
   end
 
   def test_treats_a_lowercase_continuation_keyword_as_a_continuation
@@ -65,7 +76,7 @@ class ReporterTest < Minitest::Test
       steps: [step("then", "an outcome"), step("and", "another holds")]
     )
 
-    assert_includes output, "  then an outcome\n  and another holds\n"
+    assert_includes output, "  ✓ then an outcome\n  ✓ and another holds\n"
   end
 
   def test_prints_nothing_for_a_result_without_story_steps

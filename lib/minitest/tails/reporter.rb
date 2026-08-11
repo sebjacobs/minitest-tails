@@ -21,7 +21,7 @@ module Minitest
         @io.puts "#{feature(result)}: #{scenario(result)}"
         steps.each do |step|
           @io.puts if starts_a_phase?(step)
-          @io.puts "  #{step.keyword} #{step.description}"
+          @io.puts "  #{step}"
         end
       end
 
