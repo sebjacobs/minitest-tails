@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-11
+
+- Load the gem root from the plugin when Minitest calls the init hook rather than
+  when the plugin file is read. The two files required each other, so whichever
+  loaded first saw a half-defined `Minitest::Tails`.
+- Add `Minitest::Tails.plugin_enabled?`, which holds the whole question of
+  whether the reporter should attach — the names it reads (`PLUGIN_ENV_VARS`, so
+  either `TAILS` or `STORY`) and the values that count as "on" now live together
+  in the gem's namespace instead of being split between it and the plugin shim.
+
 ## [0.1.2] - 2026-07-09
 
 - Register the reporter under Minitest 6, which no longer auto-discovers plugins
