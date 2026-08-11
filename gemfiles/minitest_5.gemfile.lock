@@ -1,5 +1,5 @@
 PATH
-  remote: .
+  remote: ..
   specs:
     minitest-tails (0.1.0)
       minitest (>= 5.16)
@@ -85,6 +85,7 @@ PLATFORMS
 
 DEPENDENCIES
   irb
+  minitest (~> 5.16)
   minitest-tails!
   rake (~> 13.0)
   standard (~> 1.3)
