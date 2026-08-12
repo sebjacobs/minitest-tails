@@ -5,6 +5,14 @@ module Minitest
 
     def self.plugin_enabled?: () -> bool
 
+    class Palette
+      def self.for: (untyped io) -> Palette
+
+      def initialize: (enabled: bool) -> void
+      def enabled?: () -> bool
+      def paint: (String text, Symbol? colour) -> String
+    end
+
     class Step
       attr_accessor keyword: String
       attr_accessor description: String

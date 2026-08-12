@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "tails/version"
+require_relative "tails/palette"
 require_relative "tails/reporter"
 require_relative "tails_plugin"
 
