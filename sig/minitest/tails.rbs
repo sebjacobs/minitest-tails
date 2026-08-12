@@ -5,6 +5,9 @@ module Minitest
 
     def self.plugin_enabled?: () -> bool
 
+    def self.palette: () -> Palette
+    def self.palette=: (Palette palette) -> Palette
+
     class Palette
       def self.for: (untyped io) -> Palette
 
@@ -19,7 +22,11 @@ module Minitest
       attr_accessor status: Symbol
 
       def initialize: (keyword: String, description: String, status: Symbol) -> void
-      def to_s: () -> String
+      def to_s: (?Palette palette) -> String
+
+      private
+
+      def mark: (Palette palette) -> String
     end
 
     def self.included: (Module base) -> void

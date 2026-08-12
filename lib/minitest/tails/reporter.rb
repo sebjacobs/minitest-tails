@@ -11,6 +11,7 @@ module Minitest
       def initialize(io = $stdout)
         super()
         @io = io
+        @palette = Palette.for(io)
       end
 
       def record(result)
@@ -20,7 +21,7 @@ module Minitest
         lines = ["", "#{feature(result)}: #{scenario(result)}"]
         steps.each do |step|
           lines << "" if starts_a_phase?(step)
-          lines << "  #{step}"
+          lines << "  #{step.to_s(@palette)}"
         end
         @io.print("#{lines.join("\n")}\n")
       end

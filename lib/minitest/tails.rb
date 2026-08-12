@@ -14,8 +14,23 @@ module Minitest
     STEP_MARKS = {passed: "✓", failed: "✗"}.freeze
     private_constant :STEP_MARKS
 
+    STEP_COLOURS = {passed: :green, failed: :red}.freeze
+    private_constant :STEP_COLOURS
+
+    def self.palette = @palette ||= Palette.for($stdout)
+
+    class << self
+      attr_writer :palette
+    end
+
     Step = Struct.new(:keyword, :description, :status) do
-      def to_s = "#{STEP_MARKS.fetch(status, "•")} #{keyword} #{description}"
+      def to_s(palette = Tails.palette) = "#{mark(palette)} #{keyword} #{description}"
+
+      private
+
+      def mark(palette)
+        palette.paint(STEP_MARKS.fetch(status, "•"), STEP_COLOURS[status])
+      end
     end
 
     def self.plugin_enabled?

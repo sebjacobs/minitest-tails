@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+- Colour the step marks — green ✓, red ✗ — in both the printed story and the
+  failure narrative, so a broken step stands out at a glance. Colour is dropped
+  when the output is not a terminal, leaving CI logs and piped output plain.
+
 ## [0.2.0] - 2026-08-11
 
 - Add `step_` as an alias of `step`, so a scenario can carry the trailing

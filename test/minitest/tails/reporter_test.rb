@@ -9,7 +9,12 @@ class ReporterTest < Minitest::Test
   class RecordingIO
     attr_reader :writes
 
-    def initialize = @writes = []
+    def initialize(tty: false)
+      @writes = []
+      @tty = tty
+    end
+
+    def tty? = @tty
 
     def print(text) = writes << text
   end
@@ -113,6 +118,25 @@ class ReporterTest < Minitest::Test
     Minitest::Tails::Reporter.new(io).record(result)
 
     assert_equal ["\nWidget: it works\n\n  ✓ Given y\n"], io.writes
+  end
+
+  def test_marks_a_passed_step_green_and_a_failed_one_red_on_a_terminal
+    io = RecordingIO.new(tty: true)
+    steps = [step("Given", "a precondition"), step("When", "it breaks", :failed)]
+    result = Result.new("WidgetTest", "test_it_works", {story_steps: steps})
+    Minitest::Tails::Reporter.new(io).record(result)
+
+    output = io.writes.join
+    assert_includes output, "  \e[32m✓\e[0m Given a precondition"
+    assert_includes output, "  \e[31m✗\e[0m When it breaks"
+  end
+
+  def test_leaves_the_marks_uncoloured_when_the_output_is_not_a_terminal
+    io = RecordingIO.new(tty: false)
+    result = Result.new("WidgetTest", "test_it_works", {story_steps: [step("Given", "y")]})
+    Minitest::Tails::Reporter.new(io).record(result)
+
+    refute_includes io.writes.join, "\e["
   end
 
   def test_keeps_an_acronym_whole_when_splitting_the_feature_name

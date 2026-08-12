@@ -11,6 +11,14 @@ class DslTest < Minitest::Test
     end
   end
 
+  def with_colour
+    original = Minitest::Tails.palette
+    Minitest::Tails.palette = Minitest::Tails::Palette.new(enabled: true)
+    yield
+  ensure
+    Minitest::Tails.palette = original
+  end
+
   def test_records_each_keyword_with_its_description
     test = feature.new("anon")
     test.given_("a precondition") {}
@@ -63,6 +71,19 @@ class DslTest < Minitest::Test
     assert_includes error.message, "✓ Given a precondition"
     assert_includes error.message, "✗ When an action fails"
     assert_includes error.message, "boom"
+  end
+
+  def test_the_narrative_colours_its_marks_when_the_terminal_supports_it
+    test = feature.new("anon")
+    test.given_("a precondition") {}
+    error = with_colour do
+      assert_raises(Minitest::Assertion) do
+        test.when_("an action fails") { raise Minitest::Assertion, "boom" }
+      end
+    end
+
+    assert_includes error.message, "\e[32m✓\e[0m Given a precondition"
+    assert_includes error.message, "\e[31m✗\e[0m When an action fails"
   end
 
   def test_a_standard_error_inside_a_step_is_also_captured

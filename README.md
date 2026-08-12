@@ -106,7 +106,8 @@ Treat Dispenser: The dispenser will not serve more treats than it holds
 
 Each phase is separated by a blank line; `And` and `But` stay attached to the
 step they continue. Every step carries the same ✓/✗ mark it has in a failure
-narrative. While the reporter is attached it takes the place of Minitest's
+narrative — green when it passed, red when it broke, and uncoloured when the
+output is not a terminal. While the reporter is attached it takes the place of Minitest's
 progress dots, which say nothing the stories don't — the summary and failure
 output are untouched.
 
