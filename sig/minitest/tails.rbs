@@ -5,6 +5,9 @@ module Minitest
 
     def self.plugin_enabled?: () -> bool
 
+    def self.hush_others: (untyped composite) -> untyped
+    def self.hushable?: (untyped reporter) -> bool
+
     def self.palette: () -> Palette
     def self.palette=: (Palette palette) -> Palette
 

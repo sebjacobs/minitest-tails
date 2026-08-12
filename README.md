@@ -107,9 +107,10 @@ Treat Dispenser: The dispenser will not serve more treats than it holds
 Each phase is separated by a blank line; `And` and `But` stay attached to the
 step they continue. Every step carries the same ✓/✗ mark it has in a failure
 narrative — green when it passed, red when it broke, and uncoloured when the
-output is not a terminal. While the reporter is attached it takes the place of Minitest's
-progress dots, which say nothing the stories don't — the summary and failure
-output are untouched.
+output is not a terminal. While the reporter is attached it takes the place of the
+progress dots, which say nothing the stories don't — whichever reporter is
+printing them. Everything else those reporters print, including the summary and
+failure output, is untouched.
 
 Any other value — including empty or unset — leaves the reporter silent and runs
 unchanged, so passing the variable through a container's environment with an
@@ -133,6 +134,10 @@ class FeatureTestCase < ApplicationSystemTestCase
   include Minitest::Tails
 end
 ```
+
+Rails registers its own reporter, which prints a dot per test alongside the
+inline failure output and the `bin/rails test path:line` rerun snippets. Under
+`STORY=1` the dots go and the rest of it stays.
 
 ## Development
 

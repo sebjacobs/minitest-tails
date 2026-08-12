@@ -54,19 +54,25 @@ class PluginTest < Minitest::Test
     assert installed?
   end
 
-  def test_drops_the_progress_reporter_so_the_dots_do_not_break_up_the_stories
+  def test_hushes_the_dots_of_a_reporter_registered_after_the_plugin
     ENV["TAILS"] = "1"
-    Minitest.reporter << Minitest::ProgressReporter.new(StringIO.new)
     Minitest.plugin_tails_init({})
+    io = StringIO.new
+    Minitest.reporter << Minitest::ProgressReporter.new(io)
+    Minitest.reporter.start
+    Minitest.reporter.record(Minitest::Result.new("test_x"))
 
-    refute Minitest.reporter.reporters.any? { |r| r.is_a?(Minitest::ProgressReporter) }
+    assert_empty io.string
   end
 
   def test_leaves_the_progress_reporter_alone_without_either_variable
-    Minitest.reporter << Minitest::ProgressReporter.new(StringIO.new)
+    io = StringIO.new
+    Minitest.reporter << Minitest::ProgressReporter.new(io)
     Minitest.plugin_tails_init({})
+    Minitest.reporter.start
+    Minitest.reporter.record(Minitest::Result.new("test_x"))
 
-    assert Minitest.reporter.reporters.any? { |r| r.is_a?(Minitest::ProgressReporter) }
+    assert_equal ".", io.string
   end
 
   def test_does_not_install_the_reporter_without_either_variable

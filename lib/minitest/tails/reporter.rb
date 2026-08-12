@@ -8,10 +8,17 @@ module Minitest
       CONTINUATION_KEYWORDS = %w[and but].freeze
       private_constant :CONTINUATION_KEYWORDS
 
-      def initialize(io = $stdout)
+      # The composite is handed over at init because Minitest sets Minitest.reporter
+      # back to nil before it starts the run, so #start cannot look it up itself.
+      def initialize(io = $stdout, composite: nil)
         super()
         @io = io
+        @composite = composite
         @palette = Palette.for(io)
+      end
+
+      def start
+        Tails.hush_others(@composite)
       end
 
       def record(result)
