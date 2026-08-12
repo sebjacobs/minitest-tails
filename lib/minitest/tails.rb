@@ -2,6 +2,7 @@
 
 require_relative "tails/version"
 require_relative "tails/palette"
+require_relative "tails/hush"
 require_relative "tails/reporter"
 require_relative "tails_plugin"
 
@@ -35,6 +36,19 @@ module Minitest
 
     def self.plugin_enabled?
       PLUGIN_ENV_VARS.any? { |name| TRUTHY_STRINGS.include?(ENV[name]&.downcase) }
+    end
+
+    def self.hush_others(composite)
+      return unless composite.respond_to?(:reporters) && composite.respond_to?(:reporters=)
+
+      composite.reporters = composite.reporters.map { |r| hushable?(r) ? Hush.new(r) : r }
+    end
+
+    def self.hushable?(reporter)
+      return false if reporter.is_a?(Reporter) || reporter.is_a?(Hush)
+      return false if reporter.is_a?(Minitest::SummaryReporter)
+
+      reporter.respond_to?(:io) && reporter.respond_to?(:io=)
     end
 
     def self.included(base)
