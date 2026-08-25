@@ -11,6 +11,8 @@ class DslTest < Minitest::Test
     end
   end
 
+  def here = __FILE__.delete_prefix("#{Dir.pwd}/")
+
   def with_colour
     original = Minitest::Tails.palette
     Minitest::Tails.palette = Minitest::Tails::Palette.new(enabled: true)
@@ -96,22 +98,58 @@ class DslTest < Minitest::Test
     assert_includes error.message, "✗ Given a broken precondition"
   end
 
-  def test_a_standard_error_starts_its_narrative_on_a_fresh_line
+  def test_a_standard_error_narrates_under_a_rule_naming_the_scenario
     test = feature.new("anon")
     error = assert_raises(RuntimeError) do
       test.given_("a broken precondition") { raise "kaboom" }
     end
 
-    assert_equal "\n  ✗ Given a broken precondition\n\nkaboom", error.message
+    assert_match(/\A\n── anon ─+\n\n  ✗ Given a broken precondition\n {6}\S+:\d+\n\nkaboom\z/, error.message)
   end
 
-  def test_an_assertion_starts_its_narrative_without_a_leading_blank_line
+  def test_an_assertion_narrates_the_same_way_before_its_message
     test = feature.new("anon")
     error = assert_raises(Minitest::Assertion) do
       test.when_("an action fails") { raise Minitest::Assertion, "boom" }
     end
 
-    assert_equal "  ✗ When an action fails\n\nboom", error.message
+    assert_match(/\A\n── anon ─+\n\n  ✗ When an action fails\n {6}\S+:\d+\n\nboom\z/, error.message)
+  end
+
+  def test_a_failing_step_points_at_where_the_step_itself_was_written
+    test = feature.new("anon")
+    line = __LINE__ + 2
+    error = assert_raises(Minitest::Assertion) do
+      test.when_("an action fails") { raise Minitest::Assertion, "boom" }
+    end
+
+    assert_includes error.message, "✗ When an action fails\n      #{here}:#{line}"
+  end
+
+  def test_a_step_written_inside_a_helper_points_at_the_scenario_that_called_it
+    scenario_line = __LINE__ + 3
+    klass = feature do
+      scenario "a visitor does something" do
+        when_it_breaks
+      end
+
+      define_method(:when_it_breaks) do
+        when_("an action fails") { raise Minitest::Assertion, "boom" }
+      end
+    end
+    result = klass.new("test_a_visitor_does_something").run
+
+    assert_includes result.failures.first.message, "✗ When an action fails\n      #{here}:#{scenario_line}"
+  end
+
+  def test_a_passing_step_keeps_its_source_out_of_the_narrative
+    test = feature.new("anon")
+    test.given_("a precondition") {}
+    error = assert_raises(Minitest::Assertion) do
+      test.when_("an action fails") { raise Minitest::Assertion, "boom" }
+    end
+
+    assert_includes error.message, "✓ Given a precondition\n\n  ✗ When an action fails"
   end
 
   def test_scenario_defines_a_runnable_test_method

@@ -10,9 +10,12 @@ message — you see the story up to and including the step that broke. An option
 reporter prints passing scenarios as readable stories too.
 
 ```
-Treat Dispenser: The dispenser will not serve more treats than it holds
+── Treat Dispenser: the dispenser will not serve more treats than it holds ──
+
   ✓ Given a dispenser loaded with 50 treats
+
   ✗ When Dennis begs it for 80
+      example/treat_dispenser_feature_test.rb:54
 
 Expected a HopperEmpty to be raised but nothing was raised.
 ```
@@ -63,6 +66,12 @@ A step is just a labelled block. The block runs immediately; if it raises (an
 assertion failure or any other error), the step is marked failed and the
 collected narrative is prepended to the error message before it is re-raised.
 
+The failed step carries its own source beneath it — the line in the scenario
+that reached the step, so a step wrapped in a reusable helper points at the
+call in the scenario rather than at the helper's own body. Minitest's
+`[file:line]` header still points at the assertion that raised, so between the
+two you get both the step and the expectation that broke.
+
 Prefer the keyword in the prose? `step "Given a dispenser loaded with 100 treats" do … end`
 does the same thing, taking the leading word as the keyword. `step_` is an alias,
 for anyone who wants the underscore on every step method.
@@ -94,7 +103,7 @@ TAILS=1 rake test
 `STORY` is accepted as an equivalent, so either name switches the reporter on.
 
 ```
-Treat Dispenser: The dispenser will not serve more treats than it holds
+── Treat Dispenser: the dispenser will not serve more treats than it holds ──
 
   ✓ Given a dispenser loaded with 50 treats
 
@@ -103,6 +112,11 @@ Treat Dispenser: The dispenser will not serve more treats than it holds
   ✓ Then the request is refused
   ✓ And the hopper still holds 50
 ```
+
+Each story opens on a rule naming the feature and the scenario, so one story
+ends where the next one's rule begins. A scenario that failed is left to its
+failure, which narrates the same story next to the expectation that broke —
+under `STORY=1` you get one telling of it, not two.
 
 Each phase is separated by a blank line; `And` and `But` stay attached to the
 step they continue. Every step carries the same ✓/✗ mark it has in a failure

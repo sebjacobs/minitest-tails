@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+- Print the source of a failed step beneath it — the line in the scenario that
+  reached the step, not the assertion inside it — so a long feature test points
+  straight at the step that broke.
+
+- Head every story with a rule naming the feature and scenario, so the start of
+  one story and the end of the last are clear in a wall of test output.
+
+- Narrate a failed scenario once rather than twice under `STORY=1`. The story
+  the failure carries is the story; the reporter leaves that scenario alone.
+
 - Suppress the progress dots of any reporter, not just Minitest's own, and do it
   once the run starts rather than at plugin init. A Rails suite kept a dot
   between every scenario, because Rails registers its reporter after the plugin
