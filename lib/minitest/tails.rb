@@ -19,6 +19,9 @@ module Minitest
     STEP_COLOURS = {passed: :green, failed: :red}.freeze
     private_constant :STEP_COLOURS
 
+    BLOCK_LABEL = /\Ablock (?:\(\d+ levels\) )?in /
+    private_constant :BLOCK_LABEL
+
     GEM_ROOTS = ([Gem.dir] + Gem.path).compact.uniq.map { |root| "#{root}/" }.freeze
     private_constant :GEM_ROOTS
 
@@ -107,8 +110,38 @@ module Minitest
       frames = caller_locations(1)&.reject { |frame| frame.path == __FILE__ }
       return if frames.nil? || frames.empty?
 
-      frame = outermost_frame_of_your_own(frames) || frames.first
+      frame = innermost_frame_of_the_scenario(frames) || outermost_frame_of_your_own(frames) || frames.first
       "#{relative_to_working_directory(frame.path)}:#{frame.lineno}"
+    end
+
+    def innermost_frame_of_the_scenario(frames)
+      entered_at = frame_the_scenario_was_entered_at(frames)
+      return if entered_at.nil?
+
+      frames.find { |frame| written_inside?(frame, entered_at) } || entered_at
+    end
+
+    def written_inside?(frame, scenario)
+      frame.path == scenario.path && enclosing_scope(frame.label) == enclosing_scope(scenario.label)
+    end
+
+    def enclosing_scope(label) = label.to_s.sub(BLOCK_LABEL, "")
+
+    def frame_the_scenario_was_entered_at(frames)
+      path, first_line = scenario_source_location
+      return if path.nil?
+
+      index = frames.each_index.find do |i|
+        absolute_path(frames[i]) == path && frames[i].lineno >= first_line && !your_own?(frames[i + 1])
+      end
+      frames[index] if index
+    end
+
+    def scenario_source_location
+      return [] unless name && respond_to?(name, true)
+
+      path, line = method(name).source_location
+      path ? [File.expand_path(path), line] : []
     end
 
     def outermost_frame_of_your_own(frames)
@@ -116,9 +149,13 @@ module Minitest
     end
 
     def your_own?(frame)
-      path = frame.absolute_path || frame.path
+      return false if frame.nil?
+
+      path = absolute_path(frame)
       path.start_with?(working_directory) && GEM_ROOTS.none? { |root| path.start_with?(root) }
     end
+
+    def absolute_path(frame) = frame.absolute_path || File.expand_path(frame.path)
 
     def relative_to_working_directory(path)
       path.start_with?(working_directory) ? path.delete_prefix(working_directory) : path

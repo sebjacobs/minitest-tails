@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require_relative "../../fixtures/shared_steps"
 
 class DslTest < Minitest::Test
   def feature(&body)
@@ -127,19 +128,49 @@ class DslTest < Minitest::Test
   end
 
   def test_a_step_written_inside_a_helper_points_at_the_scenario_that_called_it
-    scenario_line = __LINE__ + 3
+    scenario_line = __LINE__ + 5
     klass = feature do
-      scenario "a visitor does something" do
-        when_it_breaks
-      end
+      include SharedSteps
 
-      define_method(:when_it_breaks) do
-        when_("an action fails") { raise Minitest::Assertion, "boom" }
+      scenario "a visitor does something" do
+        when_an_action_fails
       end
     end
     result = klass.new("test_a_visitor_does_something").run
 
     assert_includes result.failures.first.message, "✗ When an action fails\n      #{here}:#{scenario_line}"
+  end
+
+  def test_a_step_reached_through_a_gem_still_points_at_the_scenario
+    step_line = __LINE__ + 6
+    klass = feature do
+      include SharedSteps
+
+      scenario "a visitor does something" do
+        in_a_browser do
+          when_("an action fails") { raise Minitest::Assertion, "boom" }
+        end
+      end
+    end
+    result = klass.new("test_a_visitor_does_something").run
+
+    assert_includes result.failures.first.message, "✗ When an action fails\n      #{here}:#{step_line}"
+  end
+
+  def test_a_step_a_helper_writes_inside_a_wrapper_block_points_at_the_scenario
+    step_line = __LINE__ + 6
+    klass = feature do
+      include SharedSteps
+
+      scenario "a visitor does something" do
+        in_a_browser do
+          when_an_action_fails
+        end
+      end
+    end
+    result = klass.new("test_a_visitor_does_something").run
+
+    assert_includes result.failures.first.message, "✗ When an action fails\n      #{here}:#{step_line}"
   end
 
   def test_a_passing_step_keeps_its_source_out_of_the_narrative
