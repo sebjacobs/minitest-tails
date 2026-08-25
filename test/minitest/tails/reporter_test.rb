@@ -139,6 +139,48 @@ class ReporterTest < Minitest::Test
     refute_includes io.writes.join, "\e["
   end
 
+  def composite_with(*reporters)
+    composite = Minitest::CompositeReporter.new(*reporters)
+    composite << Minitest::Tails::Reporter.new(StringIO.new, composite:)
+    composite
+  end
+
+  def test_hushes_a_sibling_reporter_when_the_run_starts
+    progress = Minitest::ProgressReporter.new(StringIO.new)
+    composite = composite_with(progress)
+    composite.start
+
+    assert_equal [progress], composite.reporters.grep(Minitest::Tails::Hush).map(&:reporter)
+  end
+
+  def test_leaves_the_summary_reporter_alone_so_minitest_can_still_find_it
+    summary = Minitest::SummaryReporter.new(StringIO.new)
+    composite = composite_with(summary)
+    composite.start
+
+    assert_equal [summary], composite.reporters.grep(Minitest::SummaryReporter)
+  end
+
+  def test_leaves_the_story_reporter_itself_unhushed
+    composite = composite_with
+    composite.start
+
+    assert_equal 1, composite.reporters.grep(Minitest::Tails::Reporter).size
+  end
+
+  def test_hushes_a_sibling_only_once_however_often_the_run_starts
+    composite = composite_with(Minitest::ProgressReporter.new(StringIO.new))
+    2.times { composite.start }
+
+    hushed = composite.reporters.grep(Minitest::Tails::Hush)
+    assert_equal 1, hushed.size
+    refute_kind_of Minitest::Tails::Hush, hushed.first.reporter
+  end
+
+  def test_starting_without_a_composite_is_harmless
+    assert_nil Minitest::Tails::Reporter.new(StringIO.new).start
+  end
+
   def test_keeps_an_acronym_whole_when_splitting_the_feature_name
     output = report(klass: "GPSCollarTest", name: "test_x", steps: [step("Given", "y")])
 

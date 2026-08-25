@@ -6,8 +6,7 @@ module Minitest
     return unless Tails.plugin_enabled?
     return if reporter.reporters.any? { |r| r.is_a?(Tails::Reporter) }
 
-    reporter.reporters.reject! { |r| r.is_a?(ProgressReporter) }
-    reporter << Tails::Reporter.new
+    reporter << Tails::Reporter.new(composite: reporter)
   end
 end
 

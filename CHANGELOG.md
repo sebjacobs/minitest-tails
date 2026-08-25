@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+- Suppress the progress dots of any reporter, not just Minitest's own, and do it
+  once the run starts rather than at plugin init. A Rails suite kept a dot
+  between every scenario, because Rails registers its reporter after the plugin
+  has already swept. Its inline failure output and `bin/rails test path:line`
+  rerun snippets are kept.
+
 - Start the failure narrative on its own line when a step raises something other
   than an assertion, so the first step no longer trails the exception class on
   the same line.
