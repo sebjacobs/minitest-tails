@@ -76,7 +76,11 @@ module Minitest
       nil
     rescue Minitest::Assertion, StandardError => failure
       step.status = :failed
-      raise failure.class, "#{narrative}\n\n#{failure.message}", failure.backtrace
+      raise failure.class, "#{narrative_for(failure)}\n\n#{failure.message}", failure.backtrace
+    end
+
+    def narrative_for(failure)
+      failure.is_a?(Minitest::Assertion) ? narrative : "\n#{narrative}"
     end
 
     def narrative

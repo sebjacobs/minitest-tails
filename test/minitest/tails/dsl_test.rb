@@ -96,6 +96,24 @@ class DslTest < Minitest::Test
     assert_includes error.message, "✗ Given a broken precondition"
   end
 
+  def test_a_standard_error_starts_its_narrative_on_a_fresh_line
+    test = feature.new("anon")
+    error = assert_raises(RuntimeError) do
+      test.given_("a broken precondition") { raise "kaboom" }
+    end
+
+    assert_equal "\n  ✗ Given a broken precondition\n\nkaboom", error.message
+  end
+
+  def test_an_assertion_starts_its_narrative_without_a_leading_blank_line
+    test = feature.new("anon")
+    error = assert_raises(Minitest::Assertion) do
+      test.when_("an action fails") { raise Minitest::Assertion, "boom" }
+    end
+
+    assert_equal "  ✗ When an action fails\n\nboom", error.message
+  end
+
   def test_scenario_defines_a_runnable_test_method
     klass = feature do
       scenario "a visitor does something" do

@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+- Start the failure narrative on its own line when a step raises something other
+  than an assertion, so the first step no longer trails the exception class on
+  the same line.
+
 - Colour the step marks — green ✓, red ✗ — in both the printed story and the
   failure narrative, so a broken step stands out at a glance. Colour is dropped
   when the output is not a terminal, leaving CI logs and piped output plain.
