@@ -3,6 +3,7 @@
 require_relative "tails/version"
 require_relative "tails/palette"
 require_relative "tails/hush"
+require_relative "tails/story"
 require_relative "tails/reporter"
 require_relative "tails_plugin"
 
@@ -18,14 +19,23 @@ module Minitest
     STEP_COLOURS = {passed: :green, failed: :red}.freeze
     private_constant :STEP_COLOURS
 
+    GEM_ROOTS = ([Gem.dir] + Gem.path).compact.uniq.map { |root| "#{root}/" }.freeze
+    private_constant :GEM_ROOTS
+
     def self.palette = @palette ||= Palette.for($stdout)
 
     class << self
       attr_writer :palette
     end
 
-    Step = Struct.new(:keyword, :description, :status) do
+    Step = Struct.new(:keyword, :description, :status, :source) do
       def to_s(palette = Tails.palette) = "#{mark(palette)} #{keyword} #{description}"
+
+      def to_lines(palette = Tails.palette)
+        return [to_s(palette)] unless status == :failed && source
+
+        [to_s(palette), "    #{source}"]
+      end
 
       private
 
@@ -83,22 +93,41 @@ module Minitest
     private
 
     def run_step(keyword, description)
-      step = Step.new(keyword:, description:, status: :running)
+      step = Step.new(keyword:, description:, status: :running, source: step_source)
       story_steps << step
       yield if block_given?
       step.status = :passed
       nil
     rescue Minitest::Assertion, StandardError => failure
       step.status = :failed
-      raise failure.class, "#{narrative_for(failure)}\n\n#{failure.message}", failure.backtrace
+      raise failure.class, "\n#{narrative}\n\n#{failure.message}", failure.backtrace
     end
 
-    def narrative_for(failure)
-      failure.is_a?(Minitest::Assertion) ? narrative : "\n#{narrative}"
+    def step_source
+      frames = caller_locations(1)&.reject { |frame| frame.path == __FILE__ }
+      return if frames.nil? || frames.empty?
+
+      frame = outermost_frame_of_your_own(frames) || frames.first
+      "#{relative_to_working_directory(frame.path)}:#{frame.lineno}"
     end
+
+    def outermost_frame_of_your_own(frames)
+      frames.take_while { |frame| your_own?(frame) }.last
+    end
+
+    def your_own?(frame)
+      path = frame.absolute_path || frame.path
+      path.start_with?(working_directory) && GEM_ROOTS.none? { |root| path.start_with?(root) }
+    end
+
+    def relative_to_working_directory(path)
+      path.start_with?(working_directory) ? path.delete_prefix(working_directory) : path
+    end
+
+    def working_directory = "#{Dir.pwd}/"
 
     def narrative
-      story_steps.map { |step| "  #{step}" }.join("\n")
+      Story.new(klass_name: self.class.name, test_name: name, steps: story_steps).to_s
     end
   end
 end

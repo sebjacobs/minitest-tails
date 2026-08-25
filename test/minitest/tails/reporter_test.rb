@@ -26,70 +26,30 @@ class ReporterTest < Minitest::Test
     io.string
   end
 
-  def step(keyword, description, status = :passed)
-    Minitest::Tails::Step.new(keyword:, description:, status:)
+  def step(keyword, description, status = :passed, source: nil)
+    Minitest::Tails::Step.new(keyword:, description:, status:, source:)
   end
 
-  def test_prints_the_feature_and_scenario_heading
+  def test_prints_a_scenario_that_passed
     output = report(
       klass: "HostsSearchFeatureTest",
       name: "test_a_visitor_searches_nearby",
-      steps: [step("Given", "a precondition")]
-    )
-
-    assert_includes output, "Hosts Search: a visitor searches nearby"
-  end
-
-  def test_prints_each_step_with_its_keyword_and_description
-    output = report(
-      klass: "WidgetTest",
-      name: "test_it_works",
       steps: [step("Given", "a precondition"), step("Then", "an outcome")]
     )
 
+    assert_includes output, "── Hosts Search: a visitor searches nearby ─"
     assert_includes output, "  ✓ Given a precondition"
     assert_includes output, "  ✓ Then an outcome"
   end
 
-  def test_marks_a_failed_step_and_leaves_earlier_ones_passed
+  def test_leaves_a_failed_scenario_to_the_failure_that_already_narrates_it
     output = report(
       klass: "WidgetTest",
       name: "test_it_works",
       steps: [step("Given", "a precondition"), step("When", "it breaks", :failed)]
     )
 
-    assert_includes output, "  ✓ Given a precondition"
-    assert_includes output, "  ✗ When it breaks"
-  end
-
-  def test_separates_each_phase_with_a_blank_line
-    output = report(
-      klass: "WidgetTest",
-      name: "test_it_works",
-      steps: [step("Given", "a precondition"), step("When", "an action happens")]
-    )
-
-    assert_includes output, "  ✓ Given a precondition\n\n  ✓ When an action happens\n"
-  end
-
-  def test_keeps_a_continuation_attached_to_the_step_it_follows
-    output = report(
-      klass: "WidgetTest",
-      name: "test_it_works",
-      steps: [step("Then", "an outcome"), step("And", "another holds"), step("But", "not that one")]
-    )
-
-    assert_includes output, "  ✓ Then an outcome\n  ✓ And another holds\n  ✓ But not that one\n"
-  end
-
-  def test_treats_a_lowercase_continuation_keyword_as_a_continuation
-    output = report(
-      klass: "WidgetTest",
-      name: "test_it_works",
-      steps: [step("then", "an outcome"), step("and", "another holds")]
-    )
-
-    assert_includes output, "  ✓ then an outcome\n  ✓ and another holds\n"
+    assert_empty output
   end
 
   def test_prints_nothing_for_a_result_without_story_steps
@@ -100,35 +60,21 @@ class ReporterTest < Minitest::Test
     assert_empty io.string
   end
 
-  def test_derives_a_plain_feature_name_without_feature_suffix
-    output = report(klass: "WidgetTest", name: "test_x", steps: [step("Given", "y")])
-
-    assert_includes output, "Widget: x"
-  end
-
-  def test_names_the_feature_after_the_class_alone_not_its_namespace
-    output = report(klass: "Kennel::WalkiesTest", name: "test_x", steps: [step("Given", "y")])
-
-    assert_includes output, "Walkies: x"
-  end
-
   def test_writes_a_scenario_in_a_single_call_so_parallel_runs_cannot_interleave
     io = RecordingIO.new
     result = Result.new("WidgetTest", "test_it_works", {story_steps: [step("Given", "y")]})
     Minitest::Tails::Reporter.new(io).record(result)
 
-    assert_equal ["\nWidget: it works\n\n  ✓ Given y\n"], io.writes
+    assert_equal 1, io.writes.size
+    assert_match(/\A\n── Widget: it works ─+\n\n  ✓ Given y\n\z/, io.writes.first)
   end
 
-  def test_marks_a_passed_step_green_and_a_failed_one_red_on_a_terminal
+  def test_paints_the_marks_when_the_output_is_a_terminal
     io = RecordingIO.new(tty: true)
-    steps = [step("Given", "a precondition"), step("When", "it breaks", :failed)]
-    result = Result.new("WidgetTest", "test_it_works", {story_steps: steps})
+    result = Result.new("WidgetTest", "test_it_works", {story_steps: [step("Given", "a precondition")]})
     Minitest::Tails::Reporter.new(io).record(result)
 
-    output = io.writes.join
-    assert_includes output, "  \e[32m✓\e[0m Given a precondition"
-    assert_includes output, "  \e[31m✗\e[0m When it breaks"
+    assert_includes io.writes.join, "  \e[32m✓\e[0m Given a precondition"
   end
 
   def test_leaves_the_marks_uncoloured_when_the_output_is_not_a_terminal
